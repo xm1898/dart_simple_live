@@ -47,7 +47,8 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      # 配了 Secrets 就用正式签名，没配就自动生成一个临时签名（保证包能装能跑）
+      # 仓库内已内置固定签名（release-keystore.jks + key.properties），默认直接用它，
+      # 保证每次构建签名一致、可覆盖安装。配了 Secrets 则用 Secrets 里的覆盖。
       - name: Prepare signing
         shell: bash
         env:
@@ -58,17 +59,18 @@ jobs:
         run: |
           cd $APP_DIR/android
           if [[ -n "$KEYSTORE_BASE64" && -n "$STORE_PASSWORD" && -n "$KEY_PASSWORD" && -n "$KEY_ALIAS" ]]; then
-            echo "::notice::使用仓库 Secrets 中的正式签名"
+            echo "::notice::使用仓库 Secrets 中的签名"
             printf '%s' "$KEYSTORE_BASE64" | openssl base64 -d -A > release-keystore.jks
             printf 'storeFile=../release-keystore.jks\nstorePassword=%s\nkeyPassword=%s\nkeyAlias=%s\n' \
               "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > key.properties
           else
-            echo "::notice::未配置 Secrets，自动生成临时签名"
-            keytool -genkeypair -v -keystore release-keystore.jks -storetype JKS \
-              -keyalg RSA -keysize 2048 -validity 10000 -alias simplelive \
-              -storepass simplelive -keypass simplelive \
-              -dname "CN=SimpleLive, OU=Dev, O=Dev, L=Beijing, S=Beijing, C=CN"
-            printf 'storeFile=../release-keystore.jks\nstorePassword=simplelive\nkeyPassword=simplelive\nkeyAlias=simplelive\n' > key.properties
+            echo "::notice::使用仓库内置固定签名"
+            if [[ ! -f release-keystore.jks || ! -f key.properties ]]; then
+              echo "::error::缺少内置签名文件 release-keystore.jks / key.properties"
+              exit 1
+            fi
+            keytool -list -keystore release-keystore.jks -storepass "$(grep '^storePassword=' key.properties | cut -d= -f2)" >/dev/null \
+              && echo "keystore 可读"
           fi
 
       - name: Restore packages
