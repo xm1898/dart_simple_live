@@ -1,9 +1,12 @@
-> ### 构建
+> ### 直接下载
 >
-> 本仓库不提供手搓安装包，全部产物由 GitHub Actions 自动构建：
-> 在 **Actions → Build → Run workflow** 点一下，或直接 push 到 `master`，
-> 几分钟后到本次运行的 **Artifacts** 里下载 `SimpleLive-android`（APK）和 `SimpleLive-windows`（ZIP）。
-> 推 `v*` 标签会自动发 Release。全程不需要配置任何 Secrets。
+> 最新成品见 **[Releases](https://github.com/xm1898/dart_simple_live/releases/latest)**：
+> `SimpleLive-android-v1.13.2.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.13.2.zip`（解压运行 `simple_live_app.exe`）。
+>
+> ### 自己出包
+>
+> 全部产物由 GitHub Actions 自动构建：**Actions → Build → Run workflow**，或 push 到 `master`，
+> 几分钟后到本次运行的 **Artifacts** 里下载。推 `v*` 标签会自动发 Release。全程不需要配置任何 Secrets。
 
 <p align="center">
     <img width="128" src="/assets/logo.png" alt="Simple Live logo">
@@ -31,7 +34,10 @@
 | Android | `SimpleLive-android-v*.apk` | 通用包；未配置 Secrets 时用自动生成的临时签名 |
 | Windows | `SimpleLive-windows-x64-v*.zip` | 解压后直接运行目录里的 `simple_live_app.exe` |
 
-获取方式：**Actions → Build → 对应运行 → Artifacts**。打 `v*` 标签会自动发布到 Releases。
+获取方式（两种都行）：
+
+1. **Releases 页**直接下载：<https://github.com/xm1898/dart_simple_live/releases/latest>
+2. **Actions → Build → 对应运行 → Artifacts**，下载对应平台的压缩包
 
 ## 本地构建
 
