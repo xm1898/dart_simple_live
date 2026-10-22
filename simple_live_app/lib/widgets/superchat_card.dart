@@ -8,19 +8,12 @@ import 'package:simple_live_core/simple_live_core.dart';
 
 class SuperChatCard extends StatefulWidget {
   final LiveSuperChatMessage message;
-  final String? remark;
   final Function()? onExpire;
   final int? customCountdown;
-  final VoidCallback? onUserTap;
-  final VoidCallback? onUserLongPress;
-
   const SuperChatCard(
     this.message, {
-    this.remark,
     required this.onExpire,
     this.customCountdown,
-    this.onUserTap,
-    this.onUserLongPress,
     Key? key,
   }) : super(key: key);
 
@@ -29,62 +22,37 @@ class SuperChatCard extends StatefulWidget {
 }
 
 class _SuperChatCardState extends State<SuperChatCard> {
-  Timer? timer;
+  late Timer timer;
+
   int countdown = 0;
 
   @override
   void initState() {
-    super.initState();
-    _restartCountdown();
-  }
+    var currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    var endTime = widget.message.endTime.millisecondsSinceEpoch ~/ 1000;
 
-  int _resolveCountdown() {
-    if (widget.customCountdown != null) {
-      return widget.customCountdown!.clamp(0, 1 << 30).toInt();
-    }
-    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final endTime = widget.message.endTime.millisecondsSinceEpoch ~/ 1000;
-    return (endTime - currentTime).clamp(0, 1 << 30).toInt();
-  }
+    countdown = endTime - currentTime;
 
-  void _restartCountdown() {
-    timer?.cancel();
-    countdown = _resolveCountdown();
-    if (widget.customCountdown != null || countdown <= 0) {
-      return;
-    }
     timer = Timer.periodic(const Duration(seconds: 1), timerCallback);
+
+    super.initState();
   }
 
-  @override
-  void didUpdateWidget(covariant SuperChatCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.message != widget.message ||
-        oldWidget.customCountdown != widget.customCountdown) {
-      _restartCountdown();
-    }
-  }
-
-  void timerCallback(Timer _) {
+  void timerCallback(e) {
     if (countdown <= 0) {
       widget.onExpire?.call();
-      timer?.cancel();
+      timer.cancel();
       return;
     }
 
     setState(() {
-      countdown = (countdown - 1).clamp(0, 1 << 30).toInt();
+      countdown -= 1;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayCountdown = (widget.customCountdown ?? countdown)
-        .clamp(
-          0,
-          1 << 30,
-        )
-        .toInt();
+    final displayCountdown = widget.customCountdown ?? countdown;
     return ClipRRect(
       borderRadius: AppStyle.radius8,
       child: Container(
@@ -110,26 +78,10 @@ class _SuperChatCardState extends State<SuperChatCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        GestureDetector(
-                          onTap: widget.onUserTap,
-                          onLongPress: widget.onUserLongPress,
-                          child: Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(text: widget.message.userName),
-                                if ((widget.remark ?? "").trim().isNotEmpty)
-                                  TextSpan(
-                                    text: " [${widget.remark!.trim()}]",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            style: const TextStyle(
-                              color: AppColors.black333,
-                            ),
+                        Text(
+                          widget.message.userName,
+                          style: const TextStyle(
+                            color: AppColors.black333,
                           ),
                         ),
                         Text(
@@ -171,7 +123,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   @override
   void dispose() {
-    timer?.cancel();
+    timer.cancel();
     super.dispose();
   }
 }

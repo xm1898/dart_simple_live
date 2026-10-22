@@ -52,7 +52,6 @@ class BaseController extends GetxController {
 }
 
 class BasePageController<T> extends BaseController {
-  static const Duration refreshCooldown = Duration(seconds: 2);
   final ScrollController scrollController = ScrollController();
   final EasyRefreshController easyRefreshController = EasyRefreshController();
   int currentPage = 1;
@@ -61,17 +60,8 @@ class BasePageController<T> extends BaseController {
   int pageSize = 24;
   var canLoadMore = false.obs;
   var list = <T>[].obs;
-  DateTime? _lastRefreshAt;
 
   Future refreshData() async {
-    final now = DateTime.now();
-    final lastRefreshAt = _lastRefreshAt;
-    if (lastRefreshAt != null &&
-        now.difference(lastRefreshAt) < refreshCooldown) {
-      SmartDialog.showToast("刷新太频繁，请稍后再试");
-      return;
-    }
-    _lastRefreshAt = now;
     currentPage = 1;
     list.value = [];
     await loadData();
@@ -84,26 +74,25 @@ class BasePageController<T> extends BaseController {
       pageError.value = false;
       pageEmpty.value = false;
       notLogin.value = false;
-      final page = currentPage;
-      pageLoadding.value = page == 1;
+      pageLoadding.value = currentPage == 1;
 
-      var result = await getData(page, pageSize);
-      // 赋值数据
-      if (page == 1) {
-        list.value = result;
-      } else {
-        list.addAll(result);
-      }
-      // 是否可以加载更多
+      var result = await getData(currentPage, pageSize);
+      //是否可以加载更多
       if (result.isNotEmpty) {
-        currentPage = page + 1;
+        currentPage++;
         canLoadMore.value = true;
         pageEmpty.value = false;
       } else {
         canLoadMore.value = false;
-        if (page == 1 && result.isEmpty) {
+        if (currentPage == 1) {
           pageEmpty.value = true;
         }
+      }
+      // 赋值数据
+      if (currentPage == 1) {
+        list.value = result;
+      } else {
+        list.addAll(result);
       }
     } catch (e) {
       handleError(e, showPageError: currentPage == 1);

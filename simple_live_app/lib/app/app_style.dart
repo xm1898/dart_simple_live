@@ -19,22 +19,10 @@ class AppColors {
 }
 
 class AppStyle {
-  /// 获取平台字体
-  static String? getPlatformFont() {
-    if (Platform.isWindows) {
-      return "Microsoft YaHei";
-    } else if (Platform.isAndroid) {
-      // Android 使用 Roboto 字体，支持中文显示
-      // 三星等设备可能需要明确指定
-      return "Roboto";
-    }
-    return null; // iOS 使用系统默认
-  }
-
   static ThemeData lightTheme = ThemeData(
     colorScheme: AppColors.lightColorScheme,
     useMaterial3: true,
-    fontFamily: getPlatformFont(),
+    fontFamily: Platform.isWindows ? "Microsoft YaHei" : null,
     visualDensity: VisualDensity.standard,
     appBarTheme: AppBarTheme(
       //elevation: 0,
@@ -75,10 +63,10 @@ class AppStyle {
     colorScheme: AppColors.darkColorScheme,
     visualDensity: VisualDensity.standard,
     textTheme: ThemeData.dark().textTheme.apply(
-          fontFamily: getPlatformFont(),
+          fontFamily: Platform.isWindows ? "Microsoft YaHei" : null,
         ),
     primaryTextTheme: ThemeData().textTheme.apply(
-          fontFamily: getPlatformFont(),
+          fontFamily: Platform.isWindows ? "Microsoft YaHei" : null,
         ),
     appBarTheme: AppBarTheme(
       //elevation: 0,
@@ -113,9 +101,6 @@ class AppStyle {
     //   ),
     // ),
   );
-  static const vGap2 = SizedBox(
-    height: 2,
-  );
   static const vGap4 = SizedBox(
     height: 4,
   );
@@ -135,9 +120,6 @@ class AppStyle {
     height: 48,
   );
 
-  static const hGap2 = SizedBox(
-    width: 2,
-  );
   static const hGap4 = SizedBox(
     width: 4,
   );
@@ -215,39 +197,8 @@ class AppStyle {
   static double get statusBarHeight => MediaQuery.of(Get.context!).padding.top;
 
   /// 底部导航条的高度
-  static double get bottomBarHeight {
-    final mediaQuery = MediaQuery.of(Get.context!);
-    final viewPadding = mediaQuery.viewPadding.bottom;
-    final padding = mediaQuery.padding.bottom;
-    return viewPadding > padding ? viewPadding : padding;
-  }
-
-  static EdgeInsets pagePadding({
-    double horizontal = 12,
-    double top = 12,
-    double bottom = 12,
-  }) {
-    return EdgeInsets.fromLTRB(
-      horizontal,
-      top,
-      horizontal,
-      bottomBarHeight + bottom,
-    );
-  }
-
-  static EdgeInsets bottomSheetPadding({
-    double left = 0,
-    double top = 0,
-    double right = 0,
-    double bottom = 12,
-  }) {
-    return EdgeInsets.fromLTRB(
-      left,
-      top,
-      right,
-      bottomBarHeight + bottom,
-    );
-  }
+  static double get bottomBarHeight =>
+      MediaQuery.of(Get.context!).padding.bottom;
 
   static Divider get divider => Divider(
         height: 1,

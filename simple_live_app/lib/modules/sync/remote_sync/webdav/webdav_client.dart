@@ -8,10 +8,10 @@ class DAVClient {
   Completer<bool> pingCompleter = Completer();
 
   DAVClient(
-    String webDAVUri,
-    String webDAVUser,
-    String webDAVPassword,
-  ) {
+      String webDAVUri,
+      String webDAVUser,
+      String webDAVPassword,
+      ) {
     client = newClient(
       webDAVUri,
       user: webDAVUser,
@@ -23,9 +23,9 @@ class DAVClient {
         'Content-Type': 'text/xml',
       },
     );
-    client.setConnectTimeout(15000);
-    client.setSendTimeout(60000);
-    client.setReceiveTimeout(60000);
+    client.setConnectTimeout(8000);
+    client.setSendTimeout(8000);
+    client.setReceiveTimeout(8000);
     pingCompleter.complete(_ping());
   }
 
@@ -37,24 +37,19 @@ class DAVClient {
       return false;
     }
   }
-
   // 强制统一
   get root => "/simple_live_app";
 
   get backupFile => "$root/backup.zip";
 
   backup(Uint8List data) async {
-    try {
-      await client.mkdir("$root");
-    } catch (_) {}
+    await client.mkdir("$root");
     await client.write("$backupFile", data);
     return true;
   }
 
   Future<List<int>> recovery() async {
-    try {
-      await client.mkdir("$root");
-    } catch (_) {}
+    await client.mkdir("$root");
     final data = await client.read(backupFile);
     return data;
   }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:simple_live_app/app/app_style.dart';
@@ -15,12 +13,8 @@ class HistoryPage extends GetView<HistoryController> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop =
-        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
-    var rowCount = isDesktop ? 1 : MediaQuery.of(context).size.width ~/ 500;
-    if (rowCount < 1) {
-      rowCount = 1;
-    }
+    var rowCount = MediaQuery.of(context).size.width ~/ 500;
+    if (rowCount < 1) rowCount = 1;
     return Scaffold(
       appBar: AppBar(
         title: const Text("观看记录"),
@@ -33,7 +27,6 @@ class HistoryPage extends GetView<HistoryController> {
         ],
       ),
       body: PageGridView(
-        padding: AppStyle.pagePadding(),
         crossAxisSpacing: 12,
         crossAxisCount: rowCount,
         pageController: controller,
@@ -94,14 +87,6 @@ class HistoryPage extends GetView<HistoryController> {
                 ],
               ),
               onTap: () {
-                final onRoomSelected = controller.onRoomSelected;
-                if (onRoomSelected != null) {
-                  Get.back();
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    onRoomSelected(site, item.roomId);
-                  });
-                  return;
-                }
                 AppNavigator.toLiveRoomDetail(site: site, roomId: item.roomId);
               },
               onLongPress: () async {

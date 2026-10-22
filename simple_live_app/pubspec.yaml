@@ -1,5 +1,5 @@
 name: simple_live_app
-version: 1.13.2+11302
+version: 1.11.4+11104
 publish_to: none
 description: "Simple Live APP"
 environment:
@@ -8,9 +8,6 @@ environment:
 dependencies:
   simple_live_core:
     path: ../simple_live_core
-  dart_quickjs:
-    git:
-      url: https://github.com/xiaoyaocz/dart_quickjs
   # 图标
   cupertino_icons: ^1.0.8
   remixicon: ^1.4.1 #Remix图标
@@ -23,7 +20,7 @@ dependencies:
   logger: ^2.6.2 #日志
   intl: ^0.20.2 #国际化
   qr_flutter: ^4.1.0 #二维码生成
-  dynamic_color: 1.8.1 #动态颜色（1.9.0 的 android/build.gradle.kts 需要子项目级 KGP，会编译失败）
+  dynamic_color: 1.8.1 #动态颜色（1.9.0 的 android 脚本会编译失败，锁定 1.8.1）
   path: any
   collection: any
   udp: ^5.0.3 #UDP
@@ -47,7 +44,7 @@ dependencies:
 
   #系统交互
   package_info_plus: ^9.0.0 #包信息
-  device_info_plus: 12.2.0 #设备信息
+  device_info_plus: ^12.2.0 #设备信息
   url_launcher: ^6.3.2 #打开链接
   share_plus: ^12.0.1 #分享
   path_provider: ^2.1.5 #常用路径
@@ -55,14 +52,13 @@ dependencies:
   permission_handler: ^12.0.1 #权限处理
   image_gallery_saver_plus: ^4.0.1 #图片保存到相册
   screen_brightness: ^2.1.7 #亮度控制
-  auto_orientation_v2: 2.3.8 #屏幕方向
+  auto_orientation_v2: ^2.3.6 #屏幕方向
   wakelock_plus: ^1.4.0 #屏幕常亮
   file_picker: ^10.3.7 #文件选择
   window_manager: ^0.5.1 #窗口管理
-  screen_retriever: ^0.2.0 #屏幕范围
   floating: ^6.0.0 #PIP画中画
   flutter_inappwebview: ^6.1.5 #WebView
-  connectivity_plus: 7.0.0 #网络状态
+  connectivity_plus: ^7.0.0 #网络状态
   qr_code_scanner_plus: ^2.0.14 #二维码扫描
   volume_controller: ^3.4.0 #音量控制
 
@@ -70,19 +66,27 @@ dependencies:
   shelf: ^1.4.2
   shelf_router: ^1.1.4
   network_info_plus: ^7.0.0
-  web_socket_channel: ^3.0.1 #远程同步WebSocket
+  signalr_netcore: ^1.4.4 #SignalR
+  dart_quickjs:
+    git:
+      url: https://github.com/xiaoyaocz/dart_quickjs
 
   # 视频播放
-  # 2.0.1 fixes Windows video texture callbacks being sent from a worker thread.
-  media_kit: 1.2.6
-  media_kit_video: 2.0.1
-  media_kit_libs_video: 1.0.7
+  media_kit: ^1.2.2
+  media_kit_video: ^2.0.0
+  media_kit_libs_video: ^1.0.7
 
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  sherpa_onnx: 1.13.4
+
+
+dependency_overrides:
+  canvas_danmaku:
+    path: ../third_party/canvas_danmaku
+  media_kit_libs_windows_video:
+    path: ../third_party/media_kit_libs_windows_video
 
 dev_dependencies:
   flutter_lints: ^2.0.0
@@ -91,13 +95,6 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
-
-dependency_overrides:
-  sherpa_onnx_ios: 1.13.4
-  canvas_danmaku:
-    path: ../third_party/canvas_danmaku
-  media_kit_libs_windows_video:
-    path: ../third_party/media_kit_libs_windows_video
 
 flutter_launcher_icons:
   android: true

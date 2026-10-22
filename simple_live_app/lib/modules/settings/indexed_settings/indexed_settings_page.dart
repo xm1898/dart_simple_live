@@ -16,7 +16,7 @@ class IndexedSettingsPage extends GetView<IndexedSettingsController> {
         title: const Text("主页设置"),
       ),
       body: ListView(
-        padding: AppStyle.pagePadding(),
+        padding: AppStyle.edgeInsetsA12,
         children: [
           Padding(
             padding: AppStyle.edgeInsetsA12.copyWith(top: 0),
