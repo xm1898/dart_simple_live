@@ -84,9 +84,9 @@ jobs:
 
       - name: Build APK
         working-directory: ${{ env.APP_DIR }}
-        # 只出真机 ABI（arm64-v8a / armeabi-v7a）。x86_64 只有模拟器用得上，
-        # 却要占 70MB+（含 onnxruntime / mpv 各一份），真机装上纯浪费。
-        run: flutter build apk --release --target-platform android-arm,android-arm64
+        # 注意：不要加 --target-platform。dart_quickjs 的 so 同时由 native assets 与
+        # 插件 jniLibs 提供，指定 ABI 会在 merge 阶段报 Duplicate resources。
+        run: flutter build apk --release
 
       - name: Collect
         run: |
