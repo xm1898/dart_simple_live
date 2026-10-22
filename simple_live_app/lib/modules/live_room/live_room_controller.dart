@@ -1717,15 +1717,22 @@ class LiveRoomController extends PlayerController
   }
 
   /// 添加一条系统消息
-  void addSysMsg(String msg) {
-    messages.add(
-      LiveMessage(
-        type: LiveMessageType.chat,
-        userName: "LiveSysMessage",
-        message: _normalizeMessageText(msg),
-        color: LiveMessageColor.white,
-      ),
+  ///
+  /// [autoRemoveAfter] 用于「进行中」类提示（正在读取、正在连接…），
+  /// 到点自动从列表移除，避免长期压在弹幕区顶部。
+  void addSysMsg(String msg, {Duration? autoRemoveAfter}) {
+    final item = LiveMessage(
+      type: LiveMessageType.chat,
+      userName: "LiveSysMessage",
+      message: _normalizeMessageText(msg),
+      color: LiveMessageColor.white,
     );
+    messages.add(item);
+    if (autoRemoveAfter != null) {
+      Timer(autoRemoveAfter, () {
+        messages.remove(item);
+      });
+    }
   }
 
   /// 接收 WebSocket 关闭消息
@@ -1765,7 +1772,7 @@ class LiveRoomController extends PlayerController
       _cancelPendingDanmakuTimers();
       clearDanmakuReplayHistory();
       rebuildDanmakuView();
-      addSysMsg("正在读取直播间信息");
+      addSysMsg("正在读取直播间信息", autoRemoveAfter: const Duration(seconds: 8));
       final detailStopwatch = Stopwatch()..start();
       final loadedDetail = _sanitizeRoomDetail(
         await targetSite.liveSite.getRoomDetail(roomId: targetRoomId),
@@ -1838,7 +1845,7 @@ class LiveRoomController extends PlayerController
       if (detail.value!.isRecord) {
         addSysMsg("当前主播未开播，正在转播录像");
       }
-      addSysMsg("正在连接弹幕服务器");
+      addSysMsg("正在连接弹幕服务器", autoRemoveAfter: const Duration(seconds: 8));
       if (!_isCurrentLoad(loadGeneration)) {
         return;
       }
