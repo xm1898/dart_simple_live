@@ -1,7 +1,7 @@
 > ### 直接下载
 >
 > 最新成品见 **[Releases](https://github.com/xm1898/dart_simple_live/releases/latest)**：
-> `SimpleLive-android-v1.13.2.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.13.2.zip`（解压运行 `simple_live_app.exe`）。
+> `SimpleLive-android-v1.11.4.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.11.4.zip`（解压运行 `simple_live_app.exe`）。
 >
 > ### 自己出包
 >
