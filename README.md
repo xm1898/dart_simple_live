@@ -1,12 +1,25 @@
 > ### 直接下载
 >
 > 最新成品见 **[Releases](https://github.com/xm1898/dart_simple_live/releases/latest)**：
-> `SimpleLive-android-v1.11.4.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.11.4.zip`（解压运行 `simple_live_app.exe`）。
+> `SimpleLive-android-v1.14.0.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.14.0.zip`（解压运行 `simple_live_app.exe`）。
 >
 > ### 自己出包
 >
 > 全部产物由 GitHub Actions 自动构建：**Actions → Build → Run workflow**，或 push 到 `master`，
 > 几分钟后到本次运行的 **Artifacts** 里下载。推 `v*` 标签会自动发 Release。全程不需要配置任何 Secrets。
+>
+> ### 本版改了什么（相对上游 1.11.4）
+>
+> - **关注页保持原版**：`follow_user_page.dart` 与 `widgets/follow_user_item.dart` 仍是上游原文件，
+>   筛选只有「全部 / 直播中 / 未开播」，没有按平台分组、没有分页按钮。
+> - **断流恢复**：错误分类 → 重试计数 → 换线路 → 重签名兜底 → 恢复风暴限流 → 判定下播换台，
+>   外加位置停滞 / 黑屏 / 解码停滞三重看门狗。
+> - **斗鱼不断流**：扫码登录拿 Cookie，自动提取 `LTP0` + `dy_did` 落本地，过期走 Passport `safeAuth`
+>   二跳静默续期，失败退避 5 分钟。
+> - **账号管理**：哔哩哔哩 / 斗鱼 / 虎牙 / 抖音 / 快手五个入口，抖音与快手支持网页登录。
+> - **新增快手直播**：内核 `KuaishouSite` 完整接入（分类、搜索、清晰度、弹幕）。
+> - **体验增强**：听直播、后台播放保活、弹幕去重合并、贡献榜、多开同屏（仅 Windows）、配置备份。
+
 
 <p align="center">
     <img width="128" src="/assets/logo.png" alt="Simple Live logo">
