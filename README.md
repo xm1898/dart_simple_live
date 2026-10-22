@@ -63,9 +63,9 @@ flutter build apk --release          # Android
 flutter build windows --release      # Windows
 ```
 
-Android 正式签名：把 keystore 放到 `simple_live_app/android/release-keystore.jks`，
-并在同目录写 `key.properties`（`storeFile=../release-keystore.jks`、`storePassword`、`keyPassword`、`keyAlias` 四项）。
-不配置也能构建，会自动回落到 debug 签名。
+Android 签名：仓库内**已内置固定签名**（`simple_live_app/android/release-keystore.jks` + `key.properties`），
+所以每次 Actions 构建出的 APK 签名一致，可以直接覆盖安装升级，不用卸载重装、数据不会丢。
+这把密钥只用于自用安装包，不涉及应用商店上架或商业分发；想换成自己的，替换这两个文件即可。
 
 ## 远程同步服务
 
