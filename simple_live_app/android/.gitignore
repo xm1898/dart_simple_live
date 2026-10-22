@@ -7,8 +7,12 @@ gradle-wrapper.jar
 GeneratedPluginRegistrant.java
 .cxx/
 
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
+# 注意：本仓库是个人自用 fork，为了让每次 Actions 构建出的 APK 签名一致
+# （否则覆盖安装会报 INSTALL_FAILED_UPDATE_INCOMPATIBLE，必须卸载重装、数据全丢），
+# 这里**故意**把固定签名密钥一起提交进仓库。它只用于自用安装包，
+# 不涉及任何应用商店上架或商业分发。
 key.properties
 **/*.keystore
 **/*.jks
+!key.properties
+!release-keystore.jks
