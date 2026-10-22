@@ -1,8 +1,9 @@
-> ### Release
+> ### 构建
 >
-> 本仓库提供阶段性 `Release` 安装包与压缩包，见 [GitHub Releases](https://github.com/June6699/dart_simple_live/releases) 页面。
->
-> 私有开发主仓会更频繁更新；公开仓库只在阶段性整理后同步。
+> 本仓库不提供手搓安装包，全部产物由 GitHub Actions 自动构建：
+> 在 **Actions → Build → Run workflow** 点一下，或直接 push 到 `master`，
+> 几分钟后到本次运行的 **Artifacts** 里下载 `SimpleLive-android`（APK）和 `SimpleLive-windows`（ZIP）。
+> 推 `v*` 标签会自动发 Release。全程不需要配置任何 Secrets。
 
 <p align="center">
     <img width="128" src="/assets/logo.png" alt="Simple Live logo">
@@ -19,59 +20,33 @@
 
 ## 仓库说明
 
-- fork 来源：[原作者仓库 xiaoyaocz/dart_simple_live](https://github.com/xiaoyaocz/dart_simple_live)
-- 当前公开仓库：`June6699/dart_simple_live`
+- 上游来源：[xiaoyaocz/dart_simple_live](https://github.com/xiaoyaocz/dart_simple_live)（原作者）
+- 接口修复与稳定性优化同步自活跃二开分支：[June6699/dart_simple_live](https://github.com/June6699/dart_simple_live)
+- 本仓库只做两件事：**保留原有 UI 外观不动**；把内核换成能用的版本，并接上自动构建
 
-## 支持项目
+## 构建产物
 
-Simple Live 会继续保持开源和免费使用。赞助费用主要用于同步服务、域名和构建测试等维护开销。
+| 平台 | 文件 | 说明 |
+| --- | --- | --- |
+| Android | `SimpleLive-android-v*.apk` | 通用包；未配置 Secrets 时用自动生成的临时签名 |
+| Windows | `SimpleLive-windows-x64-v*.zip` | 解压后直接运行目录里的 `simple_live_app.exe` |
 
-更多社区反馈与赞助鸣谢见 [THANKS.md](/THANKS.md)。
+获取方式：**Actions → Build → 对应运行 → Artifacts**。打 `v*` 标签会自动发布到 Releases。
 
-<p align="center">
-  <img width="360" src="/assets/support_wechat.png" alt="微信收款码">
-</p>
+## 本地构建
 
+需要 Flutter `3.41.9`：
 
-## 用户群
+```bash
+cd simple_live_app
+flutter pub get
+flutter build apk --release          # Android
+flutter build windows --release      # Windows
+```
 
-### QQ群+微信小号
-
-<table width="100%">
-  <tr>
-    <!-- 左列：QQ群，占50%宽度，图片居中 -->
-    <td width="40%" style="text-align: center; vertical-align: middle; padding: 0 10px;">
-      <img 
-        src="./images/README/image-20261020234152162.png" 
-        height="600" 
-        alt="SimpleLive用户群"
-      >
-    </td>
-    <!-- 右列：微信，占50%宽度，图片居中 -->
-    <td width="50%" style="text-align: center; vertical-align: middle; padding: 0 10px;">
-      <img 
-        src="./images/README/image-20261020234208921.png" 
-        height="600" 
-        alt="微信小号"
-      >
-    </td>
-  </tr>
-</table>
-
-
-## Release 资产
-
-Release 资产会在 Windows、Android 和 TV 模拟环境完成基础验证后发布。
-
-当前提供这些正式资产：
-
-- Android `apk`
-- Android TV 拆分 `apk`
-- Windows `zip`
-- Linux `zip`
-- Linux `deb`
-- Mac `dmg`
-- iOS `ipa`
+Android 正式签名：把 keystore 放到 `simple_live_app/android/release-keystore.jks`，
+并在同目录写 `key.properties`（`storeFile=../release-keystore.jks`、`storePassword`、`keyPassword`、`keyAlias` 四项）。
+不配置也能构建，会自动回落到 debug 签名。
 
 ## 远程同步服务
 
