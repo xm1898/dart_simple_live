@@ -27,7 +27,7 @@ class MultiRoomSettingsPage extends GetView<AppSettingsController> {
                 Obx(
                   () => SettingsSwitch(
                     title: "默认收起聊天区",
-                    subtitle: "从关注页多开时，独立直播窗口默认只保留展开按钮",
+                    subtitle: "多开时，独立直播窗口默认只保留展开按钮",
                     value: controller.multiRoomCollapseChat.value,
                     onChanged: controller.setMultiRoomCollapseChat,
                   ),
@@ -51,7 +51,7 @@ class MultiRoomSettingsPage extends GetView<AppSettingsController> {
           const SettingsCard(
             child: SettingsAction(
               title: "关闭所有多开窗口",
-              subtitle: "关闭本次从关注页多开启动的独立直播窗口",
+              subtitle: "关闭本次由多开同屏启动的独立直播窗口",
               leading: Icon(Icons.close),
               onTap: DesktopMultiWindowService.closeOpenedRooms,
             ),

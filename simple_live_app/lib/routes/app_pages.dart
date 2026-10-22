@@ -11,6 +11,7 @@ import 'package:simple_live_app/modules/live_room/live_room_page.dart';
 import 'package:simple_live_app/modules/multi_room/multi_room_controller.dart';
 import 'package:simple_live_app/modules/multi_room/multi_room_models.dart';
 import 'package:simple_live_app/modules/multi_room/multi_room_page.dart';
+import 'package:simple_live_app/modules/multi_room/multi_room_picker_page.dart';
 import 'package:simple_live_app/modules/settings/background_keepalive/background_keepalive_page.dart';
 import 'package:simple_live_app/modules/settings/follow_settings_page.dart';
 import 'package:simple_live_app/modules/sync/profile_backup/profile_backup_controller.dart';
@@ -163,6 +164,11 @@ class AppPages {
               const <MultiRoomItem>[],
         ),
       ),
+    ),
+    // 多开同屏选人（桌面端入口）
+    GetPage(
+      name: RoutePath.kMultiRoomPicker,
+      page: () => const MultiRoomPickerPage(),
     ),
     //弹幕设置
     GetPage(

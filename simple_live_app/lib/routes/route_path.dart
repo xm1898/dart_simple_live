@@ -15,6 +15,9 @@ class RoutePath {
   /// 多开同屏
   static const kMultiRoom = "/room/multi";
 
+  /// 多开同屏选人（桌面端入口）
+  static const kMultiRoomPicker = "/room/multi_picker";
+
   /// 多开设置
   static const kSettingsMultiRoom = "/settings/multi_room";
 

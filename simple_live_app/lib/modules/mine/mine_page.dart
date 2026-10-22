@@ -179,6 +179,19 @@ class MinePage extends StatelessWidget {
                 if (PlatformUtils.supportsInlineMultiRoom)
                   ListTile(
                     leading: const Icon(Remix.layout_grid_line),
+                    title: const Text("多开同屏"),
+                    subtitle: const Text("勾选多个直播中的关注，一起铺屏观看"),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                    onTap: () {
+                      Get.toNamed(RoutePath.kMultiRoomPicker);
+                    },
+                  ),
+                if (PlatformUtils.supportsInlineMultiRoom)
+                  ListTile(
+                    leading: const Icon(Remix.layout_grid_line),
                     title: const Text("多开设置"),
                     trailing: const Icon(
                       Icons.chevron_right,

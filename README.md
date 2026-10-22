@@ -1,7 +1,7 @@
 > ### 直接下载
 >
 > 最新成品见 **[Releases](https://github.com/xm1898/dart_simple_live/releases/latest)**：
-> `SimpleLive-android-v1.14.0.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.14.0.zip`（解压运行 `simple_live_app.exe`）。
+> `SimpleLive-android-v1.14.1.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.14.1.zip`（解压运行 `simple_live_app.exe`）。
 >
 > ### 自己出包
 >
@@ -19,6 +19,7 @@
 > - **账号管理**：哔哩哔哩 / 斗鱼 / 虎牙 / 抖音 / 快手五个入口，抖音与快手支持网页登录。
 > - **新增快手直播**：内核 `KuaishouSite` 完整接入（分类、搜索、清晰度、弹幕）。
 > - **体验增强**：听直播、后台播放保活、弹幕去重合并、贡献榜、多开同屏（仅 Windows）、配置备份。
+> - **多开同屏入口**：桌面端「我的 → 多开同屏」，勾选 2 个及以上直播中的关注即可铺屏（关注页保持原版，不加多选态）。
 
 
 <p align="center">
