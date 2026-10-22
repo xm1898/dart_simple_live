@@ -1,0 +1,173 @@
+name: Build
+
+# 触发方式（三选一，都不需要配任何 Secrets）：
+#   1. push 到 master / main        → 自动出 Android APK + Windows ZIP
+#   2. Actions 页面点 Run workflow  → 手动出包
+#   3. 推 v* 标签                   → 额外自动发 Release
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本名（可选，如 1.13.2；留空则用 pubspec.yaml 里的）'
+        required: false
+        default: ''
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.41.9'
+  APP_DIR: simple_live_app
+
+jobs:
+  # ------------------------------------------------------------------ Android
+  android:
+    name: Android APK
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      # 配了 Secrets 就用正式签名，没配就自动生成一个临时签名（保证包能装能跑）
+      - name: Prepare signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          cd $APP_DIR/android
+          if [[ -n "$KEYSTORE_BASE64" && -n "$STORE_PASSWORD" && -n "$KEY_PASSWORD" && -n "$KEY_ALIAS" ]]; then
+            echo "::notice::使用仓库 Secrets 中的正式签名"
+            printf '%s' "$KEYSTORE_BASE64" | openssl base64 -d -A > release-keystore.jks
+            printf 'storeFile=../release-keystore.jks\nstorePassword=%s\nkeyPassword=%s\nkeyAlias=%s\n' \
+              "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > key.properties
+          else
+            echo "::notice::未配置 Secrets，自动生成临时签名"
+            keytool -genkeypair -v -keystore release-keystore.jks -storetype JKS \
+              -keyalg RSA -keysize 2048 -validity 10000 -alias simplelive \
+              -storepass simplelive -keypass simplelive \
+              -dname "CN=SimpleLive, OU=Dev, O=Dev, L=Beijing, S=Beijing, C=CN"
+            printf 'storeFile=../release-keystore.jks\nstorePassword=simplelive\nkeyPassword=simplelive\nkeyAlias=simplelive\n' > key.properties
+          fi
+
+      - name: Restore packages
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+
+      - name: Apply version override
+        if: ${{ github.event.inputs.version != '' }}
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          sed -i -E "s/^version: .*/version: ${{ github.event.inputs.version }}+1/" pubspec.yaml
+          grep '^version:' pubspec.yaml
+
+      - name: Build APK
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter build apk --release
+
+      - name: Collect
+        run: |
+          mkdir -p dist
+          ver=$(grep '^version:' $APP_DIR/pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+          cp $APP_DIR/build/app/outputs/flutter-apk/app-release.apk "dist/SimpleLive-android-v${ver}.apk"
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SimpleLive-android
+          path: dist/*.apk
+          if-no-files-found: error
+
+  # ------------------------------------------------------------------ Windows
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Restore packages
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+
+      - name: Apply version override
+        if: ${{ github.event.inputs.version != '' }}
+        working-directory: ${{ env.APP_DIR }}
+        shell: bash
+        run: |
+          sed -i -E "s/^version: .*/version: ${{ github.event.inputs.version }}+1/" pubspec.yaml
+          grep '^version:' pubspec.yaml
+
+      - name: Install flutter_distributor
+        run: dart pub global activate flutter_distributor
+
+      - name: Build Windows
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter_distributor package --platform windows --targets zip --skip-clean
+
+      - name: Collect
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $ver = ((Get-Content "$env:APP_DIR/pubspec.yaml" | Select-String '^version:\s*(\S+)').Matches.Groups[1].Value.Split('+')[0])
+          $zip = Get-ChildItem "$env:APP_DIR/build/dist/*/*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $zip) {
+            # flutter_distributor 没产出就自己压一份
+            $src = "$env:APP_DIR/build/windows/x64/runner/Release"
+            if (-not (Test-Path $src)) { throw "找不到构建产物: $src" }
+            Compress-Archive -Path "$src/*" -DestinationPath "dist/SimpleLive-windows-x64-v$ver.zip" -Force
+          } else {
+            Copy-Item $zip.FullName "dist/SimpleLive-windows-x64-v$ver.zip"
+          }
+          Get-ChildItem dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SimpleLive-windows
+          path: dist/*.zip
+          if-no-files-found: error
+
+  # --------------------------------------------------- 打 tag 时自动发 Release
+  release:
+    name: Release
+    needs: [android, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: dist/*
