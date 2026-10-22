@@ -1,12 +1,20 @@
 // ignore_for_file: prefer_inlined_adds
 
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:simple_live_app/modules/category/detail/category_detail_controller.dart';
 import 'package:simple_live_app/modules/category/detail/category_detail_page.dart';
 import 'package:simple_live_app/modules/indexed/indexed_controller.dart';
 import 'package:simple_live_app/modules/live_room/live_room_controller.dart';
 import 'package:simple_live_app/modules/live_room/live_room_page.dart';
+import 'package:simple_live_app/modules/multi_room/multi_room_controller.dart';
+import 'package:simple_live_app/modules/multi_room/multi_room_models.dart';
+import 'package:simple_live_app/modules/multi_room/multi_room_page.dart';
+import 'package:simple_live_app/modules/settings/background_keepalive/background_keepalive_page.dart';
 import 'package:simple_live_app/modules/settings/follow_settings_page.dart';
+import 'package:simple_live_app/modules/sync/profile_backup/profile_backup_controller.dart';
+import 'package:simple_live_app/modules/sync/profile_backup/profile_backup_page.dart';
 import 'package:simple_live_app/modules/sync/remote_sync/webdav/remote_sync_webdav_config_page.dart';
 import 'package:simple_live_app/modules/sync/remote_sync/webdav/remote_sync_webdav_controller.dart';
 import 'package:simple_live_app/modules/sync/remote_sync/webdav/remote_sync_webdav_page.dart';
@@ -29,6 +37,10 @@ import 'package:simple_live_app/modules/mine/account/bilibili/qr_login_controlle
 import 'package:simple_live_app/modules/mine/account/bilibili/qr_login_page.dart';
 import 'package:simple_live_app/modules/mine/account/bilibili/web_login_controller.dart';
 import 'package:simple_live_app/modules/mine/account/bilibili/web_login_page.dart';
+import 'package:simple_live_app/modules/mine/account/douyin/web_login_controller.dart';
+import 'package:simple_live_app/modules/mine/account/douyin/web_login_page.dart';
+import 'package:simple_live_app/modules/mine/account/kuaishou/web_login_controller.dart';
+import 'package:simple_live_app/modules/mine/account/kuaishou/web_login_page.dart';
 import 'package:simple_live_app/modules/settings/appstyle_setting_page.dart';
 import 'package:simple_live_app/modules/settings/auto_exit_settings_page.dart';
 import 'package:simple_live_app/modules/settings/danmu_settings_page.dart';
@@ -42,9 +54,12 @@ import 'package:simple_live_app/modules/settings/indexed_settings/indexed_settin
 import 'package:simple_live_app/modules/settings/indexed_settings/indexed_settings_page.dart';
 import 'package:simple_live_app/modules/settings/other/other_settings_controller.dart';
 import 'package:simple_live_app/modules/settings/other/other_settings_page.dart';
+import 'package:simple_live_app/modules/settings/multi_room_settings_page.dart';
+import 'package:simple_live_app/modules/settings/playback_page_settings_page.dart';
 import 'package:simple_live_app/modules/settings/play_settings_page.dart';
 
 import '../modules/indexed/indexed_page.dart';
+import 'app_navigation.dart';
 import 'route_path.dart';
 
 class AppPages {
@@ -64,7 +79,14 @@ class AppPages {
       name: RoutePath.kHistory,
       page: () => const HistoryPage(),
       bindings: [
-        BindingsBuilder.put(() => HistoryController()),
+        BindingsBuilder.put(() {
+          final args = Get.arguments;
+          return HistoryController(
+            onRoomSelected: args is Map<String, dynamic>
+                ? args["onRoomSelected"] as RoomSelectionCallback?
+                : null,
+          );
+        }),
       ],
     ),
     // 关注用户
@@ -86,22 +108,59 @@ class AppPages {
     //分类详情
     GetPage(
       name: RoutePath.kCategoryDetail,
-      page: () => const CategoryDetailPage(),
-      binding: BindingsBuilder.put(
-        () => CategoryDetailController(
-          site: Get.arguments[0],
-          subCategory: Get.arguments[1],
-        ),
-      ),
+      page: () {
+        final args = Get.arguments;
+        final tag = args is Map ? args["controllerTag"] as String? : null;
+        return CategoryDetailPage(tag: tag);
+      },
+      binding: BindingsBuilder(() {
+        final args = Get.arguments;
+        if (args is Map<String, dynamic>) {
+          Get.put(
+            CategoryDetailController(
+            site: args["site"],
+            subCategory: args["category"],
+            onRoomSelected: args["onRoomSelected"] as RoomSelectionCallback?,
+            excludedRoomId: args["excludedRoomId"] as String?,
+            ),
+            tag: args["controllerTag"] as String?,
+          );
+          return;
+        }
+        Get.put(
+          CategoryDetailController(
+            site: args[0],
+            subCategory: args[1],
+          ),
+        );
+      }),
     ),
     //直播间
     GetPage(
       name: RoutePath.kLiveRoomDetail,
       page: () => const LiveRoomPage(),
-      binding: BindingsBuilder.put(
-        () => LiveRoomController(
-          pSite: Get.arguments,
+      transition: Platform.isIOS ? Transition.cupertino : null,
+      popGesture: Platform.isIOS,
+      binding: BindingsBuilder.put(() {
+        final args = Get.arguments;
+        final site = args is Map<String, dynamic> ? args["site"] : args;
+        final initialCollapsed = args is Map<String, dynamic> &&
+            args["initialDesktopSidePanelCollapsed"] == true;
+        return LiveRoomController(
+          pSite: site,
           pRoomId: Get.parameters["roomId"] ?? "",
+          initialDesktopSidePanelCollapsed: initialCollapsed,
+        );
+      }),
+    ),
+    // 多开同屏
+    GetPage(
+      name: RoutePath.kMultiRoom,
+      page: () => const MultiRoomPage(),
+      binding: BindingsBuilder.put(
+        () => MultiRoomController(
+          (Get.arguments as List?)?.whereType<MultiRoomItem>().toList() ??
+              const <MultiRoomItem>[],
         ),
       ),
     ),
@@ -118,6 +177,16 @@ class AppPages {
     GetPage(
       name: RoutePath.kSettingsPlay,
       page: () => const PlaySettingsPage(),
+    ),
+    //后台保活设置指引
+    GetPage(
+      name: RoutePath.kSettingsBackgroundKeepalive,
+      page: () => const BackgroundKeepalivePage(),
+    ),
+    //多开设置
+    GetPage(
+      name: RoutePath.kSettingsMultiRoom,
+      page: () => const MultiRoomSettingsPage(),
     ),
     //自动关闭
     GetPage(
@@ -148,6 +217,14 @@ class AppPages {
         BindingsBuilder.put(() => IndexedSettingsController()),
       ],
     ),
+    //播放页设置
+    GetPage(
+      name: RoutePath.kSettingsPlaybackPage,
+      page: () => const PlaybackPageSettingsPage(),
+      bindings: [
+        BindingsBuilder.put(() => IndexedSettingsController()),
+      ],
+    ),
     //账号设置
     GetPage(
       name: RoutePath.kSettingsAccount,
@@ -172,10 +249,33 @@ class AppPages {
         BindingsBuilder.put(() => BiliBiliQRLoginController()),
       ],
     ),
+    //抖音Web登录
+    GetPage(
+      name: RoutePath.kDouyinWebLogin,
+      page: () => const DouyinWebLoginPage(),
+      bindings: [
+        BindingsBuilder.put(() => DouyinWebLoginController()),
+      ],
+    ),
+    //快手Web登录
+    GetPage(
+      name: RoutePath.kKuaishouWebLogin,
+      page: () => const KuaishouWebLoginPage(),
+      bindings: [
+        BindingsBuilder.put(() => KuaishouWebLoginController()),
+      ],
+    ),
     // 数据同步
     GetPage(
       name: RoutePath.kSync,
       page: () => const SyncPage(),
+    ),
+    GetPage(
+      name: RoutePath.kProfileBackup,
+      page: () => const ProfileBackupPage(),
+      bindings: [
+        BindingsBuilder.put(() => ProfileBackupController()),
+      ],
     ),
     // 本地同步
     GetPage(
@@ -226,7 +326,7 @@ class AppPages {
       page: () => const RemoteSyncWebDAVPage(),
       bindings: [
         BindingsBuilder.put(
-              () => RemoteSyncWebDAVController(),
+          () => RemoteSyncWebDAVController(),
         ),
       ],
     ),

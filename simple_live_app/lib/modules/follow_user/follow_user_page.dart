@@ -135,9 +135,10 @@ class FollowUserPage extends GetView<FollowUserController> {
                           children: controller.tagList.map((option) {
                             return FilterButton(
                               text: option.tag,
-                              selected: controller.filterMode.value == option,
+                              selected:
+                                  controller.selectedTagId.value == option.id,
                               onTap: () {
-                                controller.setFilterMode(option);
+                                controller.setSelectedTag(option);
                               },
                             );
                           }).toList()),
@@ -184,10 +185,14 @@ class FollowUserPage extends GetView<FollowUserController> {
       controller.tagList.first,
       ...controller.tagList.skip(3),
     ];
+    final currentTag = controller.tagList.firstWhere(
+      (tag) => tag.id == controller.selectedTagId.value,
+      orElse: () => controller.tagList.first,
+    );
     Rx<FollowUserTag> checkTag =
-        controller.tagList.indexOf(controller.filterMode.value) < 3
-            ? copiedList.first.obs
-            : controller.filterMode.value.obs;
+        copiedList.any((tag) => tag.id == currentTag.id)
+            ? currentTag.obs
+            : copiedList.first.obs;
     final ScrollController scrollController = ScrollController();
     Get.dialog(
       AlertDialog(

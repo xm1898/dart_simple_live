@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:simple_live_app/app/utils.dart';
+import 'package:simple_live_core/simple_live_core.dart';
 
 class Log {
   static LogFileWriter? logFileWriter;
@@ -15,9 +16,14 @@ class Log {
     logFileWriter = LogFileWriter();
   }
 
-  static void disposeWriter() {
-    logFileWriter?.close();
+  static Future<void> disposeWriter() async {
+    final writer = logFileWriter;
     logFileWriter = null;
+    await writer?.close();
+  }
+
+  static Future<void> flushWriter() async {
+    await logFileWriter?.flush();
   }
 
   static void writeLog(content, [Level level = Level.info]) {
@@ -122,12 +128,24 @@ class LogFileWriter {
   }
 
   void write(String content) {
-    fileWriter?.write(content);
+    // 所有落盘日志经统一脱敏：凭据类字段（cookie/token/ltp0 等）打码，
+    // 避免账号信息随 .log 文件外泄
+    fileWriter?.write(HttpLogSanitizer.redactText(content));
     fileWriter?.write("\r\n");
   }
 
+  Future<void> flush() async {
+    await fileWriter?.flush();
+  }
+
   Future close() async {
-    await fileWriter?.close();
+    final writer = fileWriter;
+    fileWriter = null;
+    if (writer == null) {
+      return;
+    }
+    await writer.flush();
+    await writer.close();
   }
 
   void writeSystemInfo() async {
