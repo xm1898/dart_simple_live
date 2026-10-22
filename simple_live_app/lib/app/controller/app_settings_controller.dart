@@ -233,7 +233,7 @@ class AppSettingsController extends GetxController {
         .getValue(LocalStorageService.kSuperChatSortDesc, false);
     danmuDedupeEnable.value = LocalStorageService.instance.getValue(
       LocalStorageService.kDanmuDedupeEnable,
-      false,
+      true,
     );
     danmuDedupeMode.value = _normalizeDanmuDedupeMode(
       LocalStorageService.instance.getValue(
@@ -2425,7 +2425,7 @@ class AppSettingsController extends GetxController {
     return value.clamp(kLiveEventFlowMinCount, kLiveEventFlowMaxCount).toInt();
   }
 
-  var danmuDedupeEnable = false.obs;
+  var danmuDedupeEnable = true.obs;
   void setDanmuDedupeEnable(bool e) {
     danmuDedupeEnable.value = e;
     LocalStorageService.instance
