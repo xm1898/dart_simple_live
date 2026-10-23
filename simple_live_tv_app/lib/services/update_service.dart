@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -29,7 +30,7 @@ class UpdateResult {
   UpdateResult({required this.currentVersion, this.latest});
 
   bool get hasUpdate =>
-      latest != null && _compareVersion(latest!.version, currentVersion) > 0;
+      latest != null && UpdateService._compareVersion(latest!.version, currentVersion) > 0;
 }
 
 /// 应用内更新检查：查询本仓库 GitHub 最新 Release 并与当前版本比较
