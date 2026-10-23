@@ -10,6 +10,7 @@ import 'package:simple_live_app/app/utils.dart';
 import 'package:simple_live_app/routes/app_navigation.dart';
 import 'package:simple_live_app/routes/route_path.dart';
 import 'package:simple_live_app/services/signalr_service.dart';
+import 'package:simple_live_app/services/update_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class MinePage extends StatelessWidget {
@@ -281,6 +282,15 @@ class MinePage extends StatelessWidget {
                   onTap: Utils.showStatement,
                 ),
                 ListTile(
+                  leading: const Icon(Remix.download_line),
+                  title: const Text("检查更新"),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey,
+                  ),
+                  onTap: () => UpdateService.checkAndShow(),
+                ),
+                ListTile(
                   leading: const Icon(Remix.github_line),
                   title: const Text("开源主页"),
                   trailing: const Icon(
@@ -289,7 +299,7 @@ class MinePage extends StatelessWidget {
                   ),
                   onTap: () {
                     launchUrlString(
-                      "https://github.com/June6699/dart_simple_live",
+                      "https://github.com/xm1898/dart_simple_live",
                       mode: LaunchMode.externalApplication,
                     );
                   },

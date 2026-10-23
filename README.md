@@ -1,7 +1,8 @@
 > ### 直接下载
 >
 > 最新成品见 **[Releases](https://github.com/xm1898/dart_simple_live/releases/latest)**：
-> `SimpleLive-android-v1.14.1.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.14.1.zip`（解压运行 `simple_live_app.exe`）。
+> `SimpleLive-android-v1.14.2.apk`（安卓直接装）、`SimpleLive-windows-x64-v1.14.2.zip`（解压运行 `simple_live_app.exe`）、
+> `SimpleLive-tv-v1.14.2.apk`（安卓电视 / 盒子，独立包名可与手机版共存）。
 >
 > ### 自己出包
 >
@@ -45,8 +46,11 @@
 
 | 平台 | 文件 | 说明 |
 | --- | --- | --- |
-| Android | `SimpleLive-android-v*.apk` | 通用包；未配置 Secrets 时用自动生成的临时签名 |
+| Android | `SimpleLive-android-v*.apk` | 手机 / 平板通用包 |
+| Android TV | `SimpleLive-tv-v*.apk` | 电视 / 盒子专用 UI（LEANBACK 启动器），独立包名 `com.xycz.simple_live_tv` |
 | Windows | `SimpleLive-windows-x64-v*.zip` | 解压后直接运行目录里的 `simple_live_app.exe` |
+
+三个平台共用仓库内置固定签名（`release-keystore.jks`），版本号一致、可互相覆盖升级。
 
 获取方式（两种都行）：
 
@@ -111,10 +115,9 @@ TV 版已在 `Android Emulator - Medium_Phone`（`Android 16 / API 36 / x86_64`�
 
 TV 下载建议：
 
-- `SimpleLive-TV-arm64-v8a-release.apk`：适合大多数 64 位安卓电视 / 电视盒子，`NVIDIA SHIELD Android TV` 优先下载这个。
-- `SimpleLive-TV-armeabi-v7a-release.apk`：适合较老的 32 位安卓电视设备。
-- `SimpleLive-TV-x86_64-release.apk`：适合 Android Studio / AVD 模拟器等 `x86_64` 环境。
-- 如果不确定设备架构，优先看系统信息里的 `arm64-v8a / armeabi-v7a / x86_64`，不要盲下“最新版”。
+- `SimpleLive-tv-v1.14.2.apk`：通用包，安卓电视 / 电视盒子直接装。包名 `com.xycz.simple_live_tv`，与手机版互不影响、可共存。
+- TV 版设置页点击「版本」即可检查更新（和手机版共用同一个 Release）。
+- TV 播放建议保持 `硬件解码` 开启。
 
 ## 实时字幕
 

@@ -25,6 +25,7 @@ concurrency:
 env:
   FLUTTER_VERSION: '3.41.9'
   APP_DIR: simple_live_app
+  TV_DIR: simple_live_tv_app
 
 jobs:
   # ------------------------------------------------------------------ Android
@@ -160,10 +161,70 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
 
+  # ------------------------------------------------------------------ Android TV
+  android-tv:
+    name: Android TV APK
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Prepare signing
+        shell: bash
+        run: |
+          cd $TV_DIR/android
+          if [[ ! -f release-keystore.jks || ! -f key.properties ]]; then
+            echo "::error::缺少内置签名文件 release-keystore.jks / key.properties"
+            exit 1
+          fi
+          keytool -list -keystore release-keystore.jks -storepass "$(grep '^storePassword=' key.properties | cut -d= -f2)" >/dev/null \
+            && echo "keystore 可读"
+
+      - name: Restore packages
+        working-directory: ${{ env.TV_DIR }}
+        run: flutter pub get
+
+      - name: Apply version override
+        if: ${{ github.event.inputs.version != '' }}
+        working-directory: ${{ env.TV_DIR }}
+        run: |
+          sed -i -E "s/^version: .*/version: ${{ github.event.inputs.version }}+1/" pubspec.yaml
+          grep '^version:' pubspec.yaml
+
+      - name: Build TV APK
+        working-directory: ${{ env.TV_DIR }}
+        # 同手机版：不要加 --target-platform，dart_quickjs 的 so 会报 Duplicate resources
+        run: flutter build apk --release
+
+      - name: Collect
+        run: |
+          mkdir -p dist
+          ver=$(grep '^version:' $TV_DIR/pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+          cp $TV_DIR/build/app/outputs/flutter-apk/app-release.apk "dist/SimpleLive-tv-v${ver}.apk"
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SimpleLive-tv
+          path: dist/*.apk
+          if-no-files-found: error
+
   # --------------------------------------------------- 打 tag 时自动发 Release
   release:
     name: Release
-    needs: [android, windows]
+    needs: [android, windows, android-tv]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
