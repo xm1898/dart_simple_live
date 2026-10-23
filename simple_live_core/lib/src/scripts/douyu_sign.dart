@@ -1,4 +1,5 @@
 import 'package:dart_quickjs/dart_quickjs.dart';
+import 'package:simple_live_core/src/scripts/douyu_sign_native.dart';
 
 class DouyuSign {
   static const String kCryptoJs = r'''
@@ -8,20 +9,35 @@ class DouyuSign {
   /// [did] 为设备号：登录态应传 cookie 中的 acf_did，匿名态传本设备持久化的
   /// 随机 did，使签名身份与请求 Cookie 一致；不传时退回历史共享常量。
   static String getSign(String html, String rid, [String? did]) {
-    JsRuntime flutterJs = JsRuntime(
-      memoryLimit: 4 * 1024 * 1024,
-      maxStackSize: 64 * 1024,
-    );
-
-    flutterJs.eval(kCryptoJs);
-
     var signDid = (did == null || did.trim().isEmpty)
         ? "10000000000000000000000000001501"
         : did.trim();
     var time = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    flutterJs.eval(html);
-    var data = flutterJs.eval("ub98484234('$rid','$signDid','$time')");
-    flutterJs.dispose();
-    return data;
+
+    // 优先走 quickjs 引擎执行签名脚本；若 native asset 缺失或执行异常
+    // （如 Windows/Linux 桌面端未打包 dart_quickjs.dll），回退纯 Dart 实现。
+    try {
+      JsRuntime flutterJs = JsRuntime(
+        memoryLimit: 4 * 1024 * 1024,
+        maxStackSize: 64 * 1024,
+      );
+      try {
+        flutterJs.eval(kCryptoJs);
+        flutterJs.eval(html);
+        // 外壳函数名由斗鱼动态生成（历史上多次更换），从脚本中选取真身；
+        // 选取失败时退回历史名称，再失败由下方纯 Dart 实现兜底。
+        final fnName = DouyuSignNative.extractSignFnName(html) ?? 'ub98484234';
+        var data = flutterJs.eval("$fnName('$rid','$signDid','$time')");
+        if (data.isNotEmpty) return data;
+      } finally {
+        flutterJs.dispose();
+      }
+    } catch (_) {
+      // quickjs 不可用，忽略并走纯 Dart 实现
+    }
+
+    final native = DouyuSignNative.getSign(html, rid, signDid, time);
+    if (native != null && native.isNotEmpty) return native;
+    return "";
   }
 }
